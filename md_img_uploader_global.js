@@ -1,3 +1,6 @@
+ï»¿
+
+var pluginPath = objApp.GetPluginPathByScriptFileName("md_img_uploader_global.js");
 
 var successCallBack = function(result){
 	WizAlert(result);
@@ -11,43 +14,52 @@ function onMdImgUploadButtonClicked() {
 	var objWizDocument = objWindow.CurrentDocument;
 	
 	if (!objWindow.IsDocumentEditing(objWizDocument.GUID)) {
-		WizAlert("ÇëÔÚ±à¼­×´Ì¬ÏÂÊ¹ÓÃ±¾¹¦ÄÜ");
+		WizAlert("è¯·åœ¨ç¼–è¾‘çŠ¶æ€ä¸‹ä½¿ç”¨æœ¬åŠŸèƒ½");
 		return;
 	}
 	
-	var objHtmlDocument = objWindow.CurrentDocumentHtmlDocument;
-	if (!objHtmlDocument) {
+	//var objHtmlDocument = objWindow.CurrentDocumentHtmlDocument;
+	var objBrowser = objWindow.CurrentDocumentBrowserObject;
+	if (!objBrowser) {
+		WizAlert("è·å–å½“å‰Browserå¥æŸ„å¤±è´¥");
 		return;
 	}
 	
-	var pluginPath = objApp.GetPluginPathByScriptFileName("md_img_uploader_global.js");
-	//appendScriptSrc(objHtmlDocument, 'HEAD', "text/javascript", pluginPath+"lib/cos/jquery1x.min.js");
-	//appendScriptSrc(objHtmlDocument, 'body', "text/javascript", "http://cdn.bootcss.com/jquery/2.2.4/jquery.min.js");
-	
-	
-	var cos = new CosCloud("10049763");
-	var imgs = objHtmlDocument.body.getElementsByTagName("img");
-	for (var i =0 ; i<imgs.length; i++) {
-		var src = imgs[i].getAttribute("src").replace(/(^s*)|(s*$)/g, "");
-		if (src.length ==0) {
-			continue;
-		}
-		//WizAlert(src);
-		var xhr = new XMLHttpRequest();    
-		xhr.open("get", objHtmlDocument.URL + "/../" + src, true);
-		xhr.responseType = "blob";
-		xhr.onload = function() {
-			// if local requets, status will be 0
-			if (this.status == 200 || this.status==0) {
-				var blob = this.response;  // this.responseÒ²¾ÍÊÇÇëÇóµÄ·µ»Ø¾ÍÊÇBlob¶ÔÏó
-				cos.uploadFile(successCallBack, errorCallBack, "blog", "/wiznote/"+ src, blob);
+
+
+	scriptFile = pluginPath + "get_img_src.js"
+	objBrowser.ExecuteScriptFile(scriptFile, function (text) {
+		var srcs = JSON.parse(text);
+		var cos = new CosCloud("10049763");
+		for (var i =0 ; i<srcs.length; i++) {
+			var src = srcs[i];
+			WizAlert(src);
+			
+			var xhr = new XMLHttpRequest();    
+			xhr.open("get", src, true);
+			xhr.responseType = "blob";
+			xhr.onload = function() {
+				// if local requets, status will be 0
+				if (this.status == 200 || this.status==0) {
+					var blob = this.response;  // this.responseä¹Ÿå°±æ˜¯è¯·æ±‚çš„è¿”å›å°±æ˜¯Blobå¯¹è±¡
+					cos.uploadFile(successCallBack, errorCallBack, "blog", "/wiznote/"+ src, blob);
+				}
 			}
+			xhr.send();	
 		}
-		xhr.send();
-		
-		
-	}
+	});
+	
 }
+
+
+function dataUrlToBlob(dataUrl) {
+    // data:image/jpeg;base64,xxxxxx
+    var datas = dataUrl.split(',', 2);
+    var blob = binaryToBlob(atob(datas[1]));
+    blob.fileType = datas[0].split(';')[0].split(':')[1];
+    blob.name = blob.fileName = 'pic.' + blob.fileType.split('/')[1];
+    return blob;
+};
 
 function onDocumentBeforeEdit(objHtmlDocument, objWizDocument) {
 
@@ -102,8 +114,8 @@ if (eventsTabCreate) {
 */
 
 function InitMdImgUploadButton() {
+	WizAlert("InitMdImgUploadButton");
     objWindow.AddToolButton("document", "mdImgUploadButton", "img upload", "", "onMdImgUploadButtonClicked");
-	var pluginPath = objApp.GetPluginPathByScriptFileName("md_img_uploader_global.js");
 	objApp.AddGlobalScript(pluginPath + "lib/cos/jquery1x.min.js");
 	//objApp.RunScriptFile(objApp.CurPluginAppPath + "lib/cos/jquery1x.min.js", "javascript");
 }
@@ -195,7 +207,7 @@ CosCloud.prototype.deleteFolder = function(success, error, bucketName, remotePat
 
 CosCloud.prototype.deleteFile = function(success, error, bucketName, remotePath){
 	if(remotePath == "/"){
-		error({"responseText" : '{"code":10003,"message":"²»ÄÜÉ¾³ıBucket"}'});
+		error({"responseText" : '{"code":10003,"message":"ä¸èƒ½åˆ é™¤Bucket"}'});
 		return;
 	}
 	var that = this;
