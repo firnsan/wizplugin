@@ -1,26 +1,43 @@
-﻿/*
-function _getImgSrc() {	
+﻿
 
-	var srcs = [];
+function urlToDataUrl(url, callback) {
+  var xhr = new XMLHttpRequest();
+  xhr.responseType = 'blob';  //设定返回数据类型为Blob
+  xhr.onload = function() {
+    var reader = new FileReader();
+    reader.onloadend = function() {
+      callback(reader.result);    //FileReader读取后的回调
+    }
+    reader.readAsDataURL(xhr.response);   //xhr.response就是一个Blob，用FileReader读取
+  };
+  xhr.open('GET', url);
+  xhr.send();
+}
+
+function getImgDataUrl(pluginBrowser) {	
 	var imgs = document.body.getElementsByTagName("img");
+  document.execCommand("insertHtml", !1, 'bbbb');
 	//return imgs.length;
 	for (var i =0 ; i<imgs.length; i++) {
 		var src = imgs[i].getAttribute("src").replace(/(^s*)|(s*$)/g, "");
-		
+		 document.execCommand("insertHtml", !1, 'cccccc');
 		if (src.length ==0) {
 			continue;
 		}
-		src = document.URL + "/../" + src;
-		srcs.push(src);
-		//return src;
-	}
+		//var src = document.URL + "/../" + src;
+	
+    urlToDataUrl(src, function(result){
+      document.execCommand("insertHtml", !1, src);
+      document.execCommand("insertHtml", !1, result);
+      pluginBrowser.ExecuteFunction2("uploadFile", src, result, function (ret){});
+    });
 
-	return JSON.stringify(srcs);
+  }
 }
 
 
-_getImgSrc();
-*/
+
+
 
 /*
 function _getDataUrl() {
@@ -38,24 +55,31 @@ function _getDataUrl() {
 _getDataUrl();
 */
 
-
+/*
 function _addPasteHook() {
 
-			document.body.addEventListener("paste", function(e){
-				
+var ret = [1,2]
+//return JSON.stringify(ret);
+
+			document.addEventListener("paste", function(e){
+        e.preventDefault();
+         document.execCommand("insertHtml", !1, 'cccccc');
+         document.execCommand('insertHtml', !1, 'dddddd');
+
                 e.preventDefault();
                 var t = e.originalEvent || e,n = t.clipboardData.getData("text/plain");
-alert(t.clipboardData.items.length);
+//alert(t.clipboardData.items.length);
+//WizAlert(t.clipboardData.items.length);
                 for(var i, r = 0; r < t.clipboardData.items.length; r++) {
 					i = t.clipboardData.items[r]; 
-					alert(i.type);
+					//alert(i.type);
 					if (i.type.match(/^image\//i)) {
 						break;
 					}
 				}
 				// 只上传第一个一个图片
                 if(r != t.clipboardData.items.length) {
-						alert("yyy");
+						//alert("yyy");
                         var blob = i.getAsFile();
                         var form = new FormData();
                         var name = Date.parse(new Date) + ".png";
@@ -71,9 +95,11 @@ alert(t.clipboardData.items.length);
                         };
                         xhr.send(form);
                 }
-        });
+        },false);
+        return JSON.stringify(ret);
+        
 }
 _addPasteHook();
-
+*/
 
 

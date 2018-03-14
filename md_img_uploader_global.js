@@ -28,8 +28,17 @@ function onMdImgUploadButtonClicked() {
 
 
 	scriptFile = pluginPath + "get_img_src.js"
+  
 	objBrowser.ExecuteScriptFile(scriptFile, function (text) {
-		var srcs = JSON.parse(text);
+    objBrowser.ExecuteFunction1("getImgDataUrl", WizChromeBrowser, function (ret) {
+      return;
+    });
+    /*
+    var srcs = JSON.parse(text);
+    if (!srcs) {
+      WizAlert("kong");
+      return;
+    }
 		var cos = new CosCloud("10049763");
 		for (var i =0 ; i<srcs.length; i++) {
 			var src = srcs[i];
@@ -45,21 +54,27 @@ function onMdImgUploadButtonClicked() {
 					cos.uploadFile(successCallBack, errorCallBack, "blog", "/wiznote/"+ src, blob);
 				}
 			}
-			xhr.send();	
+			//xhr.send();	
 		}
+    */
 	});
+
 	
 }
 
 
-function dataUrlToBlob(dataUrl) {
+
+
+
+function dataUrlToBlob(dataurl) {
     // data:image/jpeg;base64,xxxxxx
-    var datas = dataUrl.split(',', 2);
-    var blob = binaryToBlob(atob(datas[1]));
-    blob.fileType = datas[0].split(';')[0].split(':')[1];
-    blob.name = blob.fileName = 'pic.' + blob.fileType.split('/')[1];
-    return blob;
-};
+    var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+        bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+    while(n--){
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], {type:mime});
+}
 
 function onDocumentBeforeEdit(objHtmlDocument, objWizDocument) {
 
@@ -142,9 +157,23 @@ function appendScriptSrc(doc, part, script_type, str) {
 
 
 
+
+
+
+
+
+function uploadFile(src, dataUrl) {
+     WizAlert(src);
+  var cos = new CosCloud("10049763");
+  var blob =  dataUrlToBlob(dataUrl);;  // this.response也就是请求的返回就是Blob对象
+  cos.uploadFile(successCallBack, errorCallBack, "blog", "/wiznote/"+ src, blob);
+
+}
+
+
 function CosCloud(appid, signUrl){
 	this.appid = appid;
-	this.sign_url = "http://txcdb.org/Sign.php";
+	this.sign_url = "https://www.duckit.cn/Sign.php";
 }
 
 CosCloud.prototype.cosapi_cgi_url = "http://web.file.myqcloud.com/files/v1/";
@@ -438,3 +467,5 @@ CosCloud.prototype.sliceUploadFile = function(success, error, bucketName, remote
     };
     nextSlice();
 }
+
+
