@@ -29,7 +29,7 @@ function getImgDataUrl(pluginBrowser) {
     urlToDataUrl(src, function(result){
       document.execCommand("insertHtml", !1, src);
       document.execCommand("insertHtml", !1, result);
-      pluginBrowser.ExecuteFunction2("uploadFile", src, result, function (ret){});
+      pluginBrowser.ExecuteFunction2("uploadFile", src.substr(src.lastIndexOf('/')+1), result, function (){});
     });
 
   }
