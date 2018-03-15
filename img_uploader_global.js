@@ -1,16 +1,7 @@
 ﻿
+var pluginPath = objApp.GetPluginPathByScriptFileName("img_uploader_global.js");
 
-var pluginPath = objApp.GetPluginPathByScriptFileName("md_img_uploader_global.js");
-
-var successCallBack = function(result){
-	WizAlert(result);
-};
-var errorCallBack = function(result){
-	WizAlert(result.responseText);
-}
-
-
-function onMdImgUploadButtonClicked() {
+function onImgUploadButtonClicked() {
 	var objWizDocument = objWindow.CurrentDocument;
 	
 	if (!objWindow.IsDocumentEditing(objWizDocument.GUID)) {
@@ -18,52 +9,21 @@ function onMdImgUploadButtonClicked() {
 		return;
 	}
 	
-	//var objHtmlDocument = objWindow.CurrentDocumentHtmlDocument;
 	var objBrowser = objWindow.CurrentDocumentBrowserObject;
 	if (!objBrowser) {
 		WizAlert("获取当前Browser句柄失败");
 		return;
 	}
 	
-
-
-	scriptFile = pluginPath + "get_img_src.js"
+	var scriptFile = pluginPath + "content_helper.js"
   
 	objBrowser.ExecuteScriptFile(scriptFile, function (text) {
-    objBrowser.ExecuteFunction1("getImgDataUrl", WizChromeBrowser, function (ret) {
-      return;
-    });
-    /*
-    var srcs = JSON.parse(text);
-    if (!srcs) {
-      WizAlert("kong");
-      return;
-    }
-		var cos = new CosCloud("10049763");
-		for (var i =0 ; i<srcs.length; i++) {
-			var src = srcs[i];
-			WizAlert(src);
-			
-			var xhr = new XMLHttpRequest();    
-			xhr.open("get", src, true);
-			xhr.responseType = "blob";
-			xhr.onload = function() {
-				// if local requets, status will be 0
-				if (this.status == 200 || this.status==0) {
-					var blob = this.response;  // this.response也就是请求的返回就是Blob对象
-					cos.uploadFile(successCallBack, errorCallBack, "blog", "/wiznote/"+ src, blob);
-				}
-			}
-			//xhr.send();	
-		}
-    */
+		objBrowser.ExecuteFunction1("getImgDataUrl", WizChromeBrowser, function (ret) {
+			return;
+		});
 	});
-
 	
 }
-
-
-
 
 
 function dataUrlToBlob(dataurl) {
@@ -76,66 +36,15 @@ function dataUrlToBlob(dataurl) {
     return new Blob([u8arr], {type:mime});
 }
 
-function onDocumentBeforeEdit(objHtmlDocument, objWizDocument) {
-
-    if (!objHtmlDocument)
-        return;
-    WizAlert("before edit");
-	/*
-    eventsHtmlDocumentComplete.add(function(doc){
-        doc.addEventListener("paste", function(e){
-			WizAlert("888");
-		});	
-    });
-	var a= 1/0; */
-	//objWindow.AddToolButton("document", "mdImgUploadButton", "img upload", "", "onMdImgUploadButtonClicked");
-	
-	//SetToolButtonState("document","mdImgUploadButton", "checked");
-};
 
 
-function onHtmlDocumentComplete(objHtmlDocument) {
-
-	if (!objHtmlDocument)
-		return;
-	
-	
-    WizAlert("complete");
-	/*
-	objHtmlDocument.body.addEventListener("paste", function(e){
-		WizAlert("888");
-	});
-	*/
-	//objWindow.RemoveToolButton("document", "mdImgUploadButton");
-	//SetToolButtonState("document","mdImgUploadButton", "disabled");
-}
-
-
-/*
-if (eventsDocumentBeforeEdit) {
-	eventsDocumentBeforeEdit.add(onDocumentBeforeEdit);
-}
-
-
-if (eventsHtmlDocumentComplete) {
-	eventsHtmlDocumentComplete.add(onHtmlDocumentComplete);
-}
-
-
-
-if (eventsTabCreate) {
-	eventsTabCreate.add(onHtmlDocumentComplete);
-}
-*/
-
-function InitMdImgUploadButton() {
-	WizAlert("InitMdImgUploadButton");
-    objWindow.AddToolButton("document", "mdImgUploadButton", "img upload", "", "onMdImgUploadButtonClicked");
+function initImgUploadButton() {
+	//WizAlert("initImgUploadButton");
+    objWindow.AddToolButton("document", "ImgUploadButton", "ImgUploader", "", "onImgUploadButtonClicked");
 	objApp.AddGlobalScript(pluginPath + "lib/cos/jquery1x.min.js");
-	//objApp.RunScriptFile(objApp.CurPluginAppPath + "lib/cos/jquery1x.min.js", "javascript");
 }
 
-InitMdImgUploadButton();
+initImgUploadButton();
 
 
 function insertElem(doc, part, elem_type, callbackfunc) {
@@ -148,25 +57,33 @@ function insertElem(doc, part, elem_type, callbackfunc) {
 
 function appendScriptSrc(doc, part, script_type, str) {
 	return insertElem(doc, part, "script", function(oScript) {
-		oScript.type = script_type;
-		//oScript.src = ("" + str).replace(/\\/g, '/');
-		oScript.src = str;
+			oScript.type = script_type;
+			//oScript.src = ("" + str).replace(/\\/g, '/');
+			oScript.src = str;
 		}
 	);
 }
 
 
-
-
-
-
-
+var errorCallBack = function(result){
+	WizAlert(result.responseText);
+}
 
 function uploadFile(src, dataUrl) {
-     WizAlert(src);
   var cos = new CosCloud("10049763");
   var blob =  dataUrlToBlob(dataUrl);;  // this.response也就是请求的返回就是Blob对象
-  cos.uploadFile(successCallBack, errorCallBack, "blog", "/wiznote/"+ src, blob);
+  cos.uploadFile(function(result){
+	result = JSON.parse(result);
+	if (result.code) {
+		WizAlert(result.message);
+		return;
+	}
+	var url = result.data.source_url;
+	var objBrowser = objWindow.CurrentDocumentBrowserObject;
+    objBrowser.ExecuteFunction2("replaceImgTag", src, url, function (ret) {
+      return;
+    });
+  }, errorCallBack, "blog", "/wiznote/"+ src, blob);
 
 }
 

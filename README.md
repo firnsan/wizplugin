@@ -1,40 +1,8 @@
-## Vim-Markdown-Editor
+# About ImgUploader
+A plugin for WizNote helps to upload imgs (the <img> tags in Wiz markdown document) into cos (Tencent cloud), and print out the img url. So you can get a pure markdonw in text format, and can publish everywhere not worry about the img.
 
-[Vim-Markdown-Editor]() is a vim-binding Markdown editor plugin for Wiz powered by [CodeMirror](https://github.com/marijnh/codemirror).
 
-- New `.md` file and select vim-editor to edit;
-- Type some Markdown text in the left window;
-- Press `Ctrl-P` to toggle preview window;
-- Command `:w` to save document;
-- Close edit window and then Markdown file is rendered by Wiz Markdown plugin.
 
-## Features
 
-- Markdown syntax highlighting;
-- live preview (with Mathjax $\alpha \beta \gamma$);
-- vim key-binding;
-    > `ESC` is handled by Wiz, so please use `Ctrl-[` to quit insert mode.
-    
-- code folding;
-- sync scroll;
 
-## Todo
-
-- Insert local images;
-- Change themes;
-- ...
-
-## Changes in CodeMirror
-- Map `<C-q>` to visual mode;
-    ```
-    229: { keys: ['<C-q>'], type: 'action', action: 'toggleVisualMode',
-           actionArgs: { blockwise: true }},
-    ```
-- Handle Chinese characters;
-    ```
-    4476: function onKeyEventTargetKeyDown(e) {
-            if (e.keyCode == 229)
-            return;
-            ...}
-    ```
 
